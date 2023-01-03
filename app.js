@@ -1,7 +1,8 @@
 const express = require("express");
 const mongoose = require("mongoose");
 
-const postsRouter = require("./routes/post");
+const postRouter = require("./routes/post");
+const userRouter = require("./routes/user");
 require("dotenv").config();
 
 //app settings
@@ -10,7 +11,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 //routes
-app.use("/post", postsRouter);
+app.use("/post", postRouter);
+app.use("/user", userRouter);
 
 //DB connection
 mongoose.connect(

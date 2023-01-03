@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const postModel = require("../models/Post");
+const postModel = require("../models/postModel");
 router.get("/", (req, res) => {
   res.json({ msg: "hi from posts route" });
 });

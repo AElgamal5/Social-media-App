@@ -45,6 +45,12 @@ const userSchema = new mongoose.Schema(
         ref: "User",
       },
     ],
+    friendAdds: [
+      {
+        type: mongoose.Types.ObjectId,
+        ref: "User",
+      },
+    ],
     posts: [
       {
         type: mongoose.Types.ObjectId,
@@ -57,6 +63,9 @@ const userSchema = new mongoose.Schema(
         ref: "Post",
       },
     ],
+    token: {
+      type: String,
+    },
   },
   { timestamps: true }
 );
