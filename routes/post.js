@@ -52,4 +52,8 @@ router.post("/:name/unShare", authMiddleware, (req, res) => {
   postController.unShare(req, res);
 });
 
+router.get("/:name/all", authMiddleware, (req, res) => {
+  postController.all(req, res);
+});
+
 module.exports = router;

@@ -4,6 +4,7 @@ const cors = require("cors");
 
 const postRouter = require("./routes/post");
 const userRouter = require("./routes/user");
+const commentRouter = require("./routes/comment");
 require("dotenv").config();
 
 //app settings
@@ -15,6 +16,7 @@ app.use(cors());
 //routes
 app.use("/post", postRouter);
 app.use("/user", userRouter);
+app.use("/comment", commentRouter);
 
 //DB connection
 mongoose.connect(

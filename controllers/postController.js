@@ -18,7 +18,7 @@ const createPost = async (req, res) => {
       return res.status(200).json(err);
     }
     const newPost = await Post.create({
-      author: req.body._id,
+      author: existUser._id,
       body: req.body.body,
       tags: req.body.tags,
     });
@@ -79,6 +79,10 @@ const deletePost = async (req, res) => {
       return res.status(200).json(err);
     }
     await Post.remove({ _id: req.body.postId });
+    await User.updateOne(
+      { name: req.params.name },
+      { $pull: { posts: req.body.postId } }
+    );
     res.status(200).json({ msg: "post deleted tmam" });
   } catch (error) {
     console.log(
@@ -109,7 +113,7 @@ const getAllByUserName = async (req, res) => {
       return res.status(200).json(err);
     }
     const posts = await existUser.populate("posts");
-    res.status(200).json(posts.posts);
+    res.status(200).json({ author: existUser, posts: posts.posts });
   } catch (error) {
     console.log(
       "\x1b[41m",
@@ -139,7 +143,8 @@ const getAllSharedByUserName = async (req, res) => {
       return res.status(200).json(err);
     }
     const posts = await existUser.populate("sharedPosts");
-    res.status(200).json(posts.sharedPosts);
+    // res.status(200).json(posts.sharedPosts);
+    res.status(200).json({ author: existUser, posts: posts.sharedPosts });
   } catch (error) {
     console.log(
       "\x1b[41m",
@@ -504,6 +509,11 @@ const unShare = async (req, res) => {
   }
 };
 
+const all = async (req, res) => {
+  const posts = await Post.find().populate("author");
+  res.status(200).json(posts);
+};
+
 module.exports = {
   createPost,
   editPost,
@@ -516,4 +526,5 @@ module.exports = {
   sharedBy,
   removeLike,
   unShare,
+  all,
 };

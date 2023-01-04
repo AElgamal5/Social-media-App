@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 //Schema
-const postSchema = new mongoose.Schema(
+const commentSchema = new mongoose.Schema(
   {
     author: {
       type: mongoose.Types.ObjectId,
@@ -40,4 +40,4 @@ const postSchema = new mongoose.Schema(
 );
 
 //model
-module.exports = mongoose.model("Post", postSchema);
+module.exports = mongoose.model("Comment", commentSchema);
