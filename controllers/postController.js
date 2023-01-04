@@ -282,6 +282,228 @@ const share = async (req, res) => {
   }
 };
 
+const likers = async (req, res) => {
+  try {
+    const existUser = await User.findOne({ name: req.params.name });
+    if (!existUser) {
+      let err = {
+        errors: [
+          {
+            value: req.params.name,
+            msg: `The name ${req.params.name} does not exist`,
+            param: "name",
+            location: "params",
+          },
+        ],
+      };
+      return res.status(200).json(err);
+    }
+    const existPost = await Post.findById(req.body.postId).populate("likes");
+    if (!existPost) {
+      let err = {
+        errors: [
+          {
+            value: req.body.postId,
+            msg: `The postId ${req.body.postId} does not exist`,
+            param: "postId",
+            location: "params",
+          },
+        ],
+      };
+      return res.status(200).json(err);
+    }
+    res.status(200).json(existPost.likes);
+  } catch (error) {
+    console.log(
+      "\x1b[41m",
+      "Gamal : error in likers in",
+      "\x1b[0m",
+      __filename
+    );
+    console.log("-----------------------------");
+    console.log(error);
+  }
+};
+
+const sharedBy = async (req, res) => {
+  try {
+    const existUser = await User.findOne({ name: req.params.name });
+    if (!existUser) {
+      let err = {
+        errors: [
+          {
+            value: req.params.name,
+            msg: `The name ${req.params.name} does not exist`,
+            param: "name",
+            location: "params",
+          },
+        ],
+      };
+      return res.status(200).json(err);
+    }
+    const existPost = await Post.findById(req.body.postId).populate("shares");
+    if (!existPost) {
+      let err = {
+        errors: [
+          {
+            value: req.body.postId,
+            msg: `The postId ${req.body.postId} does not exist`,
+            param: "postId",
+            location: "params",
+          },
+        ],
+      };
+      return res.status(200).json(err);
+    }
+    res.status(200).json(existPost.shares);
+  } catch (error) {
+    console.log(
+      "\x1b[41m",
+      "Gamal : error in sharedBy in",
+      "\x1b[0m",
+      __filename
+    );
+    console.log("-----------------------------");
+    console.log(error);
+  }
+};
+
+const removeLike = async (req, res) => {
+  try {
+    const existUser = await User.findOne({ name: req.params.name });
+    if (!existUser) {
+      let err = {
+        errors: [
+          {
+            value: req.params.name,
+            msg: `The name ${req.params.name} does not exist`,
+            param: "name",
+            location: "params",
+          },
+        ],
+      };
+      return res.status(200).json(err);
+    }
+    const existPost = await Post.findById(req.body.postId);
+    if (!existPost) {
+      let err = {
+        errors: [
+          {
+            value: req.body.postId,
+            msg: `The postId ${req.body.postId} does not exist`,
+            param: "postId",
+            location: "params",
+          },
+        ],
+      };
+      return res.status(200).json(err);
+    }
+    const liked = await Post.findOne({
+      _id: req.body.postId,
+      likes: existUser._id,
+    });
+    // console.log("--------------", liked);
+    if (!liked) {
+      let err = {
+        errors: [
+          {
+            value: existUser._id,
+            msg: `this post is not liked asln`,
+            param: "id",
+            location: "body",
+          },
+        ],
+      };
+      return res.status(200).json(err);
+    }
+    await Post.updateOne(
+      { _id: req.body.postId },
+      { $pull: { likes: existUser._id } }
+    );
+    res.status(200).json({ msg: "like removed tmam" });
+  } catch (error) {
+    console.log(
+      "\x1b[41m",
+      "Gamal : error in removeLike in",
+      "\x1b[0m",
+      __filename
+    );
+    console.log("-----------------------------");
+    console.log(error);
+  }
+};
+
+const unShare = async (req, res) => {
+  try {
+    const existUser = await User.findOne({ name: req.params.name });
+    if (!existUser) {
+      let err = {
+        errors: [
+          {
+            value: req.params.name,
+            msg: `The name ${req.params.name} does not exist`,
+            param: "name",
+            location: "params",
+          },
+        ],
+      };
+      return res.status(200).json(err);
+    }
+    const existPost = await Post.findById(req.body.postId);
+    if (!existPost) {
+      let err = {
+        errors: [
+          {
+            value: req.body.postId,
+            msg: `The postId ${req.body.postId} does not exist`,
+            param: "postId",
+            location: "params",
+          },
+        ],
+      };
+      return res.status(200).json(err);
+    }
+    const shared = await Post.findOne({
+      _id: req.body.postId,
+      shares: existUser._id,
+    });
+    // console.log("--------------", liked);
+    if (!shared) {
+      let err = {
+        errors: [
+          {
+            value: existUser._id,
+            msg: `this post is not shared asln`,
+            param: "id",
+            location: "body",
+          },
+        ],
+      };
+      return res.status(200).json(err);
+    }
+
+    await Post.updateOne(
+      { _id: req.body.postId },
+      { $pull: { shares: existUser._id } }
+    );
+
+    await User.updateOne(
+      { _id: existUser._id },
+      { $pull: { sharedPosts: req.body.postId } }
+    );
+    res.status(200).json({ msg: "post unShared tmam" });
+  } catch (error) {
+    console.log(
+      "\x1b[41m",
+      "Gamal : error in unShare in",
+      "\x1b[0m",
+      __filename
+    );
+    console.log("-----------------------------");
+    console.log(error);
+  }
+};
+
 module.exports = {
   createPost,
   editPost,
@@ -290,4 +512,8 @@ module.exports = {
   getAllSharedByUserName,
   addLike,
   share,
+  likers,
+  sharedBy,
+  removeLike,
+  unShare,
 };

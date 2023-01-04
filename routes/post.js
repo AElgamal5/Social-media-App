@@ -36,4 +36,20 @@ router.post("/:name/share", authMiddleware, (req, res) => {
   postController.share(req, res);
 });
 
+router.post("/:name/likers", authMiddleware, (req, res) => {
+  postController.likers(req, res);
+});
+
+router.post("/:name/sharedBy", authMiddleware, (req, res) => {
+  postController.sharedBy(req, res);
+});
+
+router.post("/:name/removeLike", authMiddleware, (req, res) => {
+  postController.removeLike(req, res);
+});
+
+router.post("/:name/unShare", authMiddleware, (req, res) => {
+  postController.unShare(req, res);
+});
+
 module.exports = router;
