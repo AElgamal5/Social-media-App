@@ -390,19 +390,33 @@ const updateUser = async (req, res) => {
       };
       return res.status(200).json(err);
     }
-    const hashedPass = await bcrypt.hash(req.body.password, 10);
-    await User.updateOne(
-      { name: req.params.name },
-      {
-        name: req.body.name,
-        email: req.body.email,
-        password: hashedPass,
-        birthDate: req.body.birthDate,
-        city: req.body.city,
-        country: req.body.country,
-        bio: req.body.bio,
-      }
-    );
+    if (!req.body.password) {
+      await User.updateOne(
+        { name: req.params.name },
+        {
+          name: req.body.name,
+          email: req.body.email,
+          birthDate: req.body.birthDate,
+          city: req.body.city,
+          country: req.body.country,
+          bio: req.body.bio,
+        }
+      );
+    } else {
+      const hashedPass = await bcrypt.hash(req.body.password, 10);
+      await User.updateOne(
+        { name: req.params.name },
+        {
+          name: req.body.name,
+          email: req.body.email,
+          password: hashedPass,
+          birthDate: req.body.birthDate,
+          city: req.body.city,
+          country: req.body.country,
+          bio: req.body.bio,
+        }
+      );
+    }
     res.status(201).json({ msg: "user updated tmam" });
   } catch (error) {
     console.log(
