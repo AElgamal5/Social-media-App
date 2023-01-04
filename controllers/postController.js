@@ -153,33 +153,132 @@ const getAllSharedByUserName = async (req, res) => {
 };
 
 const addLike = async (req, res) => {
-  const existUser = await User.findOne({ name: req.params.name });
-  if (!existUser) {
-    let err = {
-      errors: [
-        {
-          value: req.params.name,
-          msg: `The name ${req.params.name} does not exist`,
-          param: "name",
-          location: "params",
-        },
-      ],
-    };
-    return res.status(200).json(err);
+  try {
+    const existUser = await User.findOne({ name: req.params.name });
+    if (!existUser) {
+      let err = {
+        errors: [
+          {
+            value: req.params.name,
+            msg: `The name ${req.params.name} does not exist`,
+            param: "name",
+            location: "params",
+          },
+        ],
+      };
+      return res.status(200).json(err);
+    }
+    const existPost = await Post.findById(req.body.postId);
+    if (!existPost) {
+      let err = {
+        errors: [
+          {
+            value: req.body.postId,
+            msg: `The postId ${req.body.postId} does not exist`,
+            param: "postId",
+            location: "params",
+          },
+        ],
+      };
+      return res.status(200).json(err);
+    }
+    const liked = await Post.findOne({
+      _id: req.body.postId,
+      likes: existUser._id,
+    });
+    // console.log("--------------", liked);
+    if (liked) {
+      let err = {
+        errors: [
+          {
+            value: existUser._id,
+            msg: `this post is already liked`,
+            param: "id",
+            location: "body",
+          },
+        ],
+      };
+      return res.status(200).json(err);
+    }
+    await Post.updateOne(
+      { _id: req.body.postId },
+      { $push: { likes: existUser._id } }
+    );
+    res.status(200).json({ msg: "like added tmam" });
+  } catch (error) {
+    console.log(
+      "\x1b[41m",
+      "Gamal : error in addLike in",
+      "\x1b[0m",
+      __filename
+    );
+    console.log("-----------------------------");
+    console.log(error);
   }
-  const existPost = await Post.findById(req.body.postId);
-  if (!existPost) {
-    let err = {
-      errors: [
-        {
-          value: req.body.postId,
-          msg: `The postId ${req.body.postId} does not exist`,
-          param: "postId",
-          location: "params",
-        },
-      ],
-    };
-    return res.status(200).json(err);
+};
+
+const share = async (req, res) => {
+  try {
+    const existUser = await User.findOne({ name: req.params.name });
+    if (!existUser) {
+      let err = {
+        errors: [
+          {
+            value: req.params.name,
+            msg: `The name ${req.params.name} does not exist`,
+            param: "name",
+            location: "params",
+          },
+        ],
+      };
+      return res.status(200).json(err);
+    }
+    const existPost = await Post.findById(req.body.postId);
+    if (!existPost) {
+      let err = {
+        errors: [
+          {
+            value: req.body.postId,
+            msg: `The postId ${req.body.postId} does not exist`,
+            param: "postId",
+            location: "params",
+          },
+        ],
+      };
+      return res.status(200).json(err);
+    }
+    const shared = await Post.findOne({
+      _id: req.body.postId,
+      shares: existUser._id,
+    });
+    // console.log("--------------", liked);
+    if (shared) {
+      let err = {
+        errors: [
+          {
+            value: existUser._id,
+            msg: `this post is already shared`,
+            param: "id",
+            location: "body",
+          },
+        ],
+      };
+      return res.status(200).json(err);
+    }
+    await Post.updateOne(
+      { _id: req.body.postId },
+      { $push: { shares: existUser._id } }
+    );
+
+    await User.updateOne(
+      { _id: existUser._id },
+      { $push: { sharedPosts: req.body.postId } }
+    );
+    res.status(200).json({ msg: "post shared tmam" });
+  } catch (error) {
+    console.log("\x1b[41m", "Gamal : error in share in", "\x1b[0m", __filename);
+    console.log("-----------------------------");
+    console.log(error);
   }
 };
 
@@ -189,4 +288,6 @@ module.exports = {
   deletePost,
   getAllByUserName,
   getAllSharedByUserName,
+  addLike,
+  share,
 };

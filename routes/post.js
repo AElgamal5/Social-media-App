@@ -29,7 +29,11 @@ router.get("/:name/shared", authMiddleware, (req, res) => {
 });
 
 router.post("/:name/like", authMiddleware, (req, res) => {
-  postController.createPost(req, res);
+  postController.addLike(req, res);
+});
+
+router.post("/:name/share", authMiddleware, (req, res) => {
+  postController.share(req, res);
 });
 
 module.exports = router;
