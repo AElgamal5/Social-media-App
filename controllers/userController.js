@@ -1,4 +1,7 @@
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 const User = require("../models/userModel");
+require("dotenv").config();
 
 const addUser = async (req, res) => {
   try {
@@ -30,10 +33,11 @@ const addUser = async (req, res) => {
       };
       return res.status(200).json(err);
     }
+    const hashedPass = await bcrypt.hash(req.body.password, 10);
     const newUser = await User.create({
       name: req.body.name,
       email: req.body.email,
-      password: req.body.password,
+      password: hashedPass,
       birthDate: req.body.birthDate,
       city: req.body.city,
       country: req.body.country,
@@ -111,8 +115,8 @@ const addFriendRequest = async (req, res) => {
       let err = {
         errors: [
           {
-            value: req.body.req.body._id,
-            msg: `The _id ${req.body.req.body._id} is exist`,
+            value: req.body._id,
+            msg: `The _id ${req.body._id} is exist`,
             param: "_id",
             location: "body",
           },
@@ -167,8 +171,8 @@ const removeAddFriendRequest = async (req, res) => {
       let err = {
         errors: [
           {
-            value: req.body.req.body._id,
-            msg: `The _id ${req.body.req.body._id} is exist`,
+            value: req.body._id,
+            msg: `The _id ${req.body._id} is exist`,
             param: "_id",
             location: "body",
           },
@@ -205,8 +209,8 @@ const acceptFriendRequest = async (req, res) => {
       let err = {
         errors: [
           {
-            value: req.body.req.body._id,
-            msg: `The _id ${req.body.req.body._id} is exist`,
+            value: req.body._id,
+            msg: `The _id ${req.body._id} is exist`,
             param: "_id",
             location: "body",
           },
@@ -251,8 +255,8 @@ const removeFriendRequest = async (req, res) => {
       let err = {
         errors: [
           {
-            value: req.body.req.body._id,
-            msg: `The _id ${req.body.req.body._id} is exist`,
+            value: req.body._id,
+            msg: `The _id ${req.body._id} is exist`,
             param: "_id",
             location: "body",
           },
@@ -386,12 +390,13 @@ const updateUser = async (req, res) => {
       };
       return res.status(200).json(err);
     }
+    const hashedPass = await bcrypt.hash(req.body.password, 10);
     await User.updateOne(
       { name: req.params.name },
       {
         name: req.body.name,
         email: req.body.email,
-        password: req.body.password,
+        password: hashedPass,
         birthDate: req.body.birthDate,
         city: req.body.city,
         country: req.body.country,
@@ -402,7 +407,106 @@ const updateUser = async (req, res) => {
   } catch (error) {
     console.log(
       "\x1b[41m",
-      "Gamal : error in removeFriend in",
+      "Gamal : error in updateUser in",
+      "\x1b[0m",
+      __filename
+    );
+    console.log("-----------------------------");
+    console.log(error);
+  }
+};
+
+const login = async (req, res) => {
+  try {
+    const existUser = await User.findOne({ email: req.body.email });
+    if (!existUser) {
+      let err = {
+        errors: [
+          {
+            value: req.body.email,
+            msg: `The email ${req.body.email} does not exist`,
+            param: "email",
+            location: "params",
+          },
+        ],
+      };
+      return res.status(200).json(err);
+    }
+
+    if (await bcrypt.compare(req.body.password, existUser.password)) {
+      await jwt.sign(
+        { name: existUser.name },
+        process.env.TOKEN_KEY,
+        {
+          expiresIn: "1d",
+        },
+
+        async (err, token) => {
+          if (err) {
+            res.json(err);
+          } else {
+            await User.updateOne(
+              { email: req.body.email },
+              {
+                token: token,
+              }
+            );
+
+            res.json({
+              msg: "login tmam",
+              token,
+              _id: existUser._id,
+              name: existUser.name,
+              email: existUser.email,
+              city: existUser.city,
+              country: existUser.country,
+              bio: existUser.bio,
+            });
+          }
+        }
+      );
+    } else {
+      let err = {
+        errors: [
+          {
+            value: req.body.password,
+            msg: `The password is wrong`,
+            param: "password",
+            location: "body",
+          },
+        ],
+      };
+      res.status(200).json(err);
+    }
+  } catch (error) {
+    console.log("\x1b[41m", "Gamal : error in login in", "\x1b[0m", __filename);
+    console.log("-----------------------------");
+    console.log(error);
+  }
+};
+
+const logout = async (req, res) => {
+  try {
+    const existUser = await User.findOne({ name: req.params.name });
+    if (!existUser) {
+      let err = {
+        errors: [
+          {
+            value: req.params.name,
+            msg: `The name ${req.params.name} does not exist`,
+            param: "name",
+            location: "params",
+          },
+        ],
+      };
+      return res.status(200).json(err);
+    }
+    await User.updateOne({ name: req.params.name }, { token: null });
+    res.json({ msg: "logout tmam" });
+  } catch (error) {
+    console.log(
+      "\x1b[41m",
+      "Gamal : error in logout in",
       "\x1b[0m",
       __filename
     );
@@ -425,4 +529,6 @@ module.exports = {
   getAllFriendRequests,
   removeFriend,
   updateUser,
+  login,
+  logout,
 };
