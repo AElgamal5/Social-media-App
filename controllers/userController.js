@@ -143,10 +143,272 @@ const addFriendRequest = async (req, res) => {
 };
 
 const getAllFriendAdds = async (req, res) => {
-  const data = await User.findOne({ name: req.params.name }).populate(
-    "friendAdds"
-  );
-  res.status(200).json(data);
+  try {
+    const data = await User.findOne({ name: req.params.name }).populate(
+      "friendAdds"
+    );
+    res.status(200).json(data);
+  } catch (error) {
+    console.log(
+      "\x1b[41m",
+      "Gamal : error in getAllFriendAdds in",
+      "\x1b[0m",
+      __filename
+    );
+    console.log("-----------------------------");
+    console.log(error);
+  }
+};
+
+const removeAddFriendRequest = async (req, res) => {
+  try {
+    const existUser = await User.findById(req.body._id);
+    if (!existUser) {
+      let err = {
+        errors: [
+          {
+            value: req.body.req.body._id,
+            msg: `The _id ${req.body.req.body._id} is exist`,
+            param: "_id",
+            location: "body",
+          },
+        ],
+      };
+      return res.status(200).json(err);
+    }
+    await User.updateOne(
+      { name: req.params.name },
+      { $pull: { friendAdds: req.body._id } }
+    );
+    const sender = await User.findOne({ name: req.params.name });
+    await User.updateOne(
+      { _id: req.body._id },
+      { $pull: { friendRequests: sender._id } }
+    );
+    res.status(200).json({ msg: "friend request removed tmam" });
+  } catch (error) {
+    console.log(
+      "\x1b[41m",
+      "Gamal : error in removeAddFriendRequest in",
+      "\x1b[0m",
+      __filename
+    );
+    console.log("-----------------------------");
+    console.log(error);
+  }
+};
+
+const acceptFriendRequest = async (req, res) => {
+  try {
+    const existUser = await User.findById(req.body._id);
+    if (!existUser) {
+      let err = {
+        errors: [
+          {
+            value: req.body.req.body._id,
+            msg: `The _id ${req.body.req.body._id} is exist`,
+            param: "_id",
+            location: "body",
+          },
+        ],
+      };
+      return res.status(200).json(err);
+    }
+    await User.updateOne(
+      { name: req.params.name },
+      { $pull: { friendRequests: req.body._id } }
+    );
+    await User.updateOne(
+      { name: req.params.name },
+      { $push: { friends: req.body._id } }
+    );
+    const sender = await User.findOne({ name: req.params.name });
+    await User.updateOne(
+      { _id: req.body._id },
+      { $pull: { friendAdds: sender._id } }
+    );
+    await User.updateOne(
+      { _id: req.body._id },
+      { $push: { friends: sender._id } }
+    );
+    res.status(200).json({ msg: "friend request accepted tmam" });
+  } catch (error) {
+    console.log(
+      "\x1b[41m",
+      "Gamal : error in acceptFriendRequest in",
+      "\x1b[0m",
+      __filename
+    );
+    console.log("-----------------------------");
+    console.log(error);
+  }
+};
+
+const removeFriendRequest = async (req, res) => {
+  try {
+    const existUser = await User.findById(req.body._id);
+    if (!existUser) {
+      let err = {
+        errors: [
+          {
+            value: req.body.req.body._id,
+            msg: `The _id ${req.body.req.body._id} is exist`,
+            param: "_id",
+            location: "body",
+          },
+        ],
+      };
+      return res.status(200).json(err);
+    }
+    await User.updateOne(
+      { name: req.params.name },
+      { $pull: { friendRequests: req.body._id } }
+    );
+    const sender = await User.findOne({ name: req.params.name });
+    await User.updateOne(
+      { _id: req.body._id },
+      { $pull: { friendAdds: sender._id } }
+    );
+    res.status(200).json({ msg: "friend request removed tmam" });
+  } catch (error) {
+    console.log(
+      "\x1b[41m",
+      "Gamal : error in removeFriendRequest in",
+      "\x1b[0m",
+      __filename
+    );
+    console.log("-----------------------------");
+    console.log(error);
+  }
+};
+
+const getAllFriends = async (req, res) => {
+  try {
+    const data = await User.findOne({ name: req.params.name }).populate(
+      "friends"
+    );
+    res.status(200).json(data);
+  } catch (error) {
+    console.log(
+      "\x1b[41m",
+      "Gamal : error in getAllFriends in",
+      "\x1b[0m",
+      __filename
+    );
+    console.log("-----------------------------");
+    console.log(error);
+  }
+};
+
+const getAllFriendRequests = async (req, res) => {
+  try {
+    const data = await User.findOne({ name: req.params.name }).populate(
+      "friendRequests"
+    );
+    res.status(200).json(data);
+  } catch (error) {
+    console.log(
+      "\x1b[41m",
+      "Gamal : error in getAllFriendRequests in",
+      "\x1b[0m",
+      __filename
+    );
+    console.log("-----------------------------");
+    console.log(error);
+  }
+};
+
+const removeFriend = async (req, res) => {
+  try {
+    await User.updateOne(
+      { name: req.params.name },
+      { $pull: { friends: req.body._id } }
+    );
+    const sender = await User.findOne({ name: req.params.name });
+    await User.updateOne(
+      { _id: req.body._id },
+      { $pull: { friends: sender._id } }
+    );
+    res.status(200).json({ msg: "friend removed tmam" });
+  } catch (error) {
+    console.log(
+      "\x1b[41m",
+      "Gamal : error in removeFriend in",
+      "\x1b[0m",
+      __filename
+    );
+    console.log("-----------------------------");
+    console.log(error);
+  }
+};
+
+const updateUser = async (req, res) => {
+  try {
+    const existUser = await User.findOne({ name: req.params.name });
+    if (!existUser) {
+      let err = {
+        errors: [
+          {
+            value: req.params.name,
+            msg: `The name ${req.params.name} does not exist`,
+            param: "name",
+            location: "params",
+          },
+        ],
+      };
+      return res.status(200).json(err);
+    }
+    const checkName = await User.findOne({ name: req.body.name });
+    if (checkName && existUser.name !== checkName.name) {
+      let err = {
+        errors: [
+          {
+            value: req.body.name,
+            msg: `The name ${req.body.name} is exist`,
+            param: "name",
+            location: "body",
+          },
+        ],
+      };
+      return res.status(200).json(err);
+    }
+    const checkEmail = await User.findOne({ email: req.body.email });
+    if (checkEmail && existUser.email !== checkEmail.email) {
+      let err = {
+        errors: [
+          {
+            value: req.body.email,
+            msg: `The email ${req.body.email} is exist`,
+            param: "email",
+            location: "body",
+          },
+        ],
+      };
+      return res.status(200).json(err);
+    }
+    await User.updateOne(
+      { name: req.params.name },
+      {
+        name: req.body.name,
+        email: req.body.email,
+        password: req.body.password,
+        birthDate: req.body.birthDate,
+        city: req.body.city,
+        country: req.body.country,
+        bio: req.body.bio,
+      }
+    );
+    res.status(201).json({ msg: "user updated tmam" });
+  } catch (error) {
+    console.log(
+      "\x1b[41m",
+      "Gamal : error in removeFriend in",
+      "\x1b[0m",
+      __filename
+    );
+    console.log("-----------------------------");
+    console.log(error);
+  }
 };
 
 module.exports = {
@@ -156,20 +418,11 @@ module.exports = {
   getUserByName,
   addFriendRequest,
   getAllFriendAdds,
+  removeAddFriendRequest,
+  acceptFriendRequest,
+  removeFriendRequest,
+  getAllFriends,
+  getAllFriendRequests,
+  removeFriend,
+  updateUser,
 };
-// let err = {
-//   errors: [
-//     {
-//       value: req.body.code,
-//       msg: `The code ${req.body.code} is exist`,
-//       param: "code",
-//       location: "body",
-//     },
-//   ],
-// };
-// res.status(200).json(err);
-
-// const user = await User.updateOne(
-//   { name: req.params.name },
-//   { $pull: { friendAdds: req.body._id } }
-// );

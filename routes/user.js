@@ -31,4 +31,32 @@ router.get("/:name/addFriendRequest", (req, res) => {
   userController.getAllFriendAdds(req, res);
 });
 
+router.post("/:name/removeAddFriendRequest", (req, res) => {
+  userController.removeAddFriendRequest(req, res);
+});
+
+router.post("/:name/acceptFriendRequest", (req, res) => {
+  userController.acceptFriendRequest(req, res);
+});
+
+router.post("/:name/removeFriendRequest", (req, res) => {
+  userController.removeFriendRequest(req, res);
+});
+
+router.get("/:name/friends", (req, res) => {
+  userController.getAllFriends(req, res);
+});
+
+router.get("/:name/friendRequests", (req, res) => {
+  userController.getAllFriendRequests(req, res);
+});
+
+router.post("/:name/removeFriend", (req, res) => {
+  userController.removeFriend(req, res);
+});
+
+router.post("/:name/update", (req, res) => {
+  userController.updateUser(req, res);
+});
+
 module.exports = router;
