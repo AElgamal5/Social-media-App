@@ -34,6 +34,7 @@ const addComment = async (req, res) => {
     }
     const newCom = await Comment.create({
       author: existUser._id,
+      userName: existUser.name,
       body: req.body.body,
       post: req.body.postId,
     });
@@ -91,20 +92,81 @@ const editComment = async (req, res) => {
 };
 
 const deleteComment = async (req, res) => {
-  const existUser = await User.findOne({ name: req.params.name });
-  if (!existUser) {
-    let err = {
-      errors: [
-        {
-          value: req.params.name,
-          msg: `The name ${req.params.name} does not exist`,
-          param: "name",
-          location: "params",
-        },
-      ],
-    };
-    return res.status(200).json(err);
+  try {
+    const existUser = await User.findOne({ name: req.params.name });
+    if (!existUser) {
+      let err = {
+        errors: [
+          {
+            value: req.params.name,
+            msg: `The name ${req.params.name} does not exist`,
+            param: "name",
+            location: "params",
+          },
+        ],
+      };
+      return res.status(200).json(err);
+    }
+    const existCom = await Comment.findById(req.body.commentId);
+    if (!existCom) {
+      let err = {
+        errors: [
+          {
+            value: req.body.commentId,
+            msg: `The commentId ${req.body.commentId} does not exist`,
+            param: "commentId",
+            location: "body",
+          },
+        ],
+      };
+      return res.status(200).json(err);
+    }
+    await Comment.remove({ _id: req.body.commentId });
+    await Post.updateOne(
+      { _id: existCom.post },
+      { $pull: { comments: existCom._id } }
+    );
+    res.status(200).json({ msg: "comment deleted tmam" });
+  } catch (error) {
+    console.log(
+      "\x1b[41m",
+      "Gamal : error in deleteComment in",
+      "\x1b[0m",
+      __filename
+    );
+    console.log("-----------------------------");
+    console.log(error);
   }
 };
 
-module.exports = { addComment, editComment, deleteComment };
+const getAllByPostId = async (req, res) => {
+  try {
+    const existUser = await User.findOne({ name: req.params.name });
+    if (!existUser) {
+      let err = {
+        errors: [
+          {
+            value: req.params.name,
+            msg: `The name ${req.params.name} does not exist`,
+            param: "name",
+            location: "params",
+          },
+        ],
+      };
+      return res.status(200).json(err);
+    }
+    const coms = await Post.findById(req.body.postId).populate("comments");
+    res.status(200).json(coms.comments);
+  } catch (error) {
+    console.log(
+      "\x1b[41m",
+      "Gamal : error in getAllByPostId in",
+      "\x1b[0m",
+      __filename
+    );
+    console.log("-----------------------------");
+    console.log(error);
+  }
+};
+
+module.exports = { addComment, editComment, deleteComment, getAllByPostId };
